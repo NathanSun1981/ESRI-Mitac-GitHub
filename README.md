@@ -1,1 +1,1 @@
-# ESRI-Mitac-GitHub
+# ESRI-Mitac
