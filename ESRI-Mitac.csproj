@@ -266,13 +266,16 @@
     <Compile Include="Assets\HoloToolkit\Utilities\Scripts\Billboard.cs" />
     <Compile Include="Assets\HoloToolkit\Utilities\Scripts\Singleton.cs" />
     <Compile Include="Assets\HoloToolkit\Utilities\Scripts\SphereBasedTagalong.cs" />
+    <Compile Include="Assets\Scripts\BuildingMenu.cs" />
     <Compile Include="Assets\Scripts\Buildings.cs" />
     <Compile Include="Assets\Scripts\ButtonCall.cs" />
     <Compile Include="Assets\Scripts\ButtonClear.cs" />
     <Compile Include="Assets\Scripts\ButtonClose.cs" />
     <Compile Include="Assets\Scripts\ButtonConnect.cs" />
+    <Compile Include="Assets\Scripts\ButtonDelete.cs" />
     <Compile Include="Assets\Scripts\ButtonDimension.cs" />
     <Compile Include="Assets\Scripts\ButtonExit.cs" />
+    <Compile Include="Assets\Scripts\ButtonFollowing.cs" />
     <Compile Include="Assets\Scripts\ButtonMapstyle.cs" />
     <Compile Include="Assets\Scripts\ButtonMoveConfirm.cs" />
     <Compile Include="Assets\Scripts\ButtonMoveDown.cs" />
@@ -284,6 +287,9 @@
     <Compile Include="Assets\Scripts\ButtonMoveRightUp.cs" />
     <Compile Include="Assets\Scripts\ButtonMoveUp.cs" />
     <Compile Include="Assets\Scripts\ButtonShowAddress.cs" />
+    <Compile Include="Assets\Scripts\ButtonTurnLeft.cs" />
+    <Compile Include="Assets\Scripts\ButtonTurnRight.cs" />
+    <Compile Include="Assets\Scripts\ButtonVideo.cs" />
     <Compile Include="Assets\Scripts\ButtonZoomIn.cs" />
     <Compile Include="Assets\Scripts\ButtonZoomOut.cs" />
     <Compile Include="Assets\Scripts\ControlScript.cs" />

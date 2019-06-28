@@ -17,17 +17,18 @@ public class Buildings : MonoBehaviour {
     private Vector3 navigationPreviousPosition;
     public float MaxScale = 2f;
     public float MinScale = 0.1f;
+    private float scaleRate = 1.1f;
 
     public float RotationSensitivity = 25.0f;
+    public BuildingMenu buildMenu;
 
     private float rotationFactorY;
-
-    public Canvas MenuControl;
 
     private Vector3 obj_position;
     private Quaternion obj_rotation;
     private Vector3 obj_scale;
     private DateTime m_datetime;
+    private bool stopUpdate;
 
 
     enum lockAction
@@ -45,6 +46,8 @@ public class Buildings : MonoBehaviour {
 
         string assetbundleURL = "http://142.104.69.88:8080/assetbundle/" + gameObject.name + ".assetbundle";
         this.StartCoroutine(this.DownloadSKPModule(assetbundleURL, gameObject.name));
+        stopUpdate = false;
+
     }
 	
 	// Update is called once per frame
@@ -55,57 +58,54 @@ public class Buildings : MonoBehaviour {
         TimeSpan ts = dTimeNow.Subtract(m_datetime);
         float tsf = float.Parse(ts.TotalSeconds.ToString());
 
-        if (tsf > 5)
+        if(!stopUpdate)
         {
-            StartCoroutine(querySQL(updateURL));
-            m_datetime = DateTime.Now;
-        }
+            if (tsf > 5)
+            {
+                StartCoroutine(querySQL(updateURL));
+                m_datetime = DateTime.Now;
+            }
 
+
+            if (gameObject.transform.position != obj_position)
+            {
+                gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, obj_position, MoveSpeed * Time.deltaTime);
+            }
+
+            if (gameObject.transform.rotation != obj_rotation)
+            {
+                gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, obj_rotation, Time.deltaTime * 3); ;
+            }
+            if (gameObject.transform.localScale != obj_scale)
+            {
+                gameObject.transform.localScale = obj_scale;
+            }
+        }
         
-        if (gameObject.transform.position != obj_position)
-        {
-            gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, obj_position, MoveSpeed * Time.deltaTime);
-        }
-
-        if (gameObject.transform.rotation != obj_rotation)
-        {
-            gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, obj_rotation, Time.deltaTime * 3); ;
-        }
-        if (gameObject.transform.localScale != obj_scale)
-        {
-            gameObject.transform.localScale = obj_scale;
-        }
         
 
     }
 
     // Use this for initialization  
-	 /*
-    void PerformManipulationStart()
-    {
-        if ((lockedby == SystemInfo.deviceName) || (lockedby == "none"))
-        {
-            List<string> list = new List<string>();
-            list.Add("locked");
-            StartCoroutine(UpdateSQL(updateURL, list, lockAction.dolock));
-        }
 
+    void OnSelect()
+    {
+        stopUpdate = true;
+        BuildingMenu buttonObject = Instantiate(buildMenu, this.transform.position, Quaternion.Euler(90, 0, 0)) as BuildingMenu;
+        buttonObject.building = this.gameObject;
     }
 
     void PerformManipulationUpdate(Vector3 position)
     {
-        if (GestureManager.Instance.IsManipulating && ((lockedby == SystemInfo.deviceName) || ((lockedby == "none"))))
+        //if (GestureManager.Instance.IsManipulating && ((lockedby == SystemInfo.deviceName) || ((lockedby == "none"))))
+        if (GestureManager.Instance.IsManipulating)
         {
             try
             {
                 if (GazeManager.Instance.HitInfo.collider.gameObject.tag == "Rotate")
                 {   //绕Y轴进行旋转
                     rotationFactorY = GestureManager.Instance.ManipulationPosition.x * RotationSensitivity;
-                    transform.Rotate(new Vector3(0, rotationFactorY, 0));
-                    
-                    List<string> list = new List<string>();
-                    list.Add("rotation");
-                    StartCoroutine(UpdateSQL(updateURL, list, lockAction.dolock));
+                    transform.Rotate(new Vector3(0, rotationFactorY, 0));                
                 }
             }
             catch
@@ -115,84 +115,26 @@ public class Buildings : MonoBehaviour {
         }
     }
 
-    void PerformManipulationCompleted()
+    void PerformManipulationComplete(Vector3 position)
     {
-        if ((lockedby == SystemInfo.deviceName) || (lockedby == "none"))
-        {
-            List<string> list = new List<string>();
-            list.Add("locked");
-            StartCoroutine(UpdateSQL(updateURL, list, lockAction.dounlock));
-        }
+        List<string> list = new List<string>();
+        list.Add("rotation");
+        //StartCoroutine(UpdateSQL(updateURL, list));
     }
 
-   
-    void PerformNavigationStart(Vector3 position)
+    private IEnumerator UpdateSQL(string url, List<string> list, Coordinate coordinate)
     {
-        //设置初始位置    
-        navigationPreviousPosition = position;
-    }
+        GameObject tc = GameObject.Find("TerrainMap");
+        TerrainMap terrainmap = tc.GetComponent<TerrainMap>();
 
-    void PerformZoomUpdate(Vector3 position)
-    {
-        if (GestureManager.Instance.IsNavigating && HandsManager.Instance.FocusedGameObject == gameObject)
-        {
-            Vector3 deltaScale = Vector3.zero;
-            float ScaleValue = 0.01f;
-            //设置每一帧缩放的大小  
-            if (position.x < 0)
-            {
-                ScaleValue = -1 * ScaleValue;
-            }
-            //当缩放超出设置的最大，最小范围时直接返回  
-            if (transform.localScale.x >= MaxScale && ScaleValue > 0)
-            {
-                return;
-            }
-            else if (transform.localScale.x <= MinScale && ScaleValue < 0)
-            {
-                return;
-            }
-            //根据比例计算每个方向上的缩放大小  
-            deltaScale.x = ScaleValue;
-            deltaScale.y = (transform.localScale.y / transform.localScale.x) * ScaleValue;
-            deltaScale.z = (transform.localScale.z / transform.localScale.x) * ScaleValue;
-            transform.localScale += deltaScale;
-        }
-    }
-    void OnHold()
-    {
-        if ((lockedby == SystemInfo.deviceName) || (lockedby == "none"))
-        {
-            List<string> list = new List<string>();
-            list.Add("locked");
-            StartCoroutine(UpdateSQL(updateURL, list, lockAction.dolock));
-            //MenuControl.gameObject.SetActive(true);
-        }
-
-    }
-
-    void OnSelect()
-    {
-        if ((lockedby == SystemInfo.deviceName) || (lockedby == "none"))
-        {
-            List<string> list = new List<string>();
-            list.Add("locked");
-            StartCoroutine(UpdateSQL(updateURL, list, lockAction.dolock));
-            //MenuControl.gameObject.SetActive(true);
-        }
-    }
-
-    private IEnumerator UpdateSQL(string url, List<string> list, lockAction lockaction)
-    {
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
         foreach (string item in list)
         {
             switch(item)
             {
-                case "position":
-                    formData.Add(new MultipartFormDataSection("positionX", gameObject.transform.position.x.ToString()));                 
-                    formData.Add(new MultipartFormDataSection("positionY", gameObject.transform.position.y.ToString()));                    
-                    formData.Add(new MultipartFormDataSection("positionZ", gameObject.transform.position.z.ToString()));
+                case "coordinate":
+                    formData.Add(new MultipartFormDataSection("Longtitude", coordinate.Longitude.ToString()));                 
+                    formData.Add(new MultipartFormDataSection("Latitude", coordinate.Latitude.ToString()));                    
                     break;
                 case "rotation":
                     formData.Add(new MultipartFormDataSection("rotationX", gameObject.transform.eulerAngles.x.ToString()));                    
@@ -200,28 +142,20 @@ public class Buildings : MonoBehaviour {
                     formData.Add(new MultipartFormDataSection("rotationZ", gameObject.transform.eulerAngles.z.ToString()));
                     break;
                 case "scale":
-                    formData.Add(new MultipartFormDataSection("scaleX", gameObject.transform.localScale.x.ToString()));                    
-                    formData.Add(new MultipartFormDataSection("scaleY", gameObject.transform.localScale.y.ToString()));                    
-                    formData.Add(new MultipartFormDataSection("scaleZ", gameObject.transform.localScale.z.ToString()));
+                    formData.Add(new MultipartFormDataSection("scaleX", ((gameObject.transform.localScale.x * Mathf.Pow(2, (21 - terrainmap._place.Level))).ToString())));                    
+                    formData.Add(new MultipartFormDataSection("scaleY", ((gameObject.transform.localScale.y * Mathf.Pow(2, (21 - terrainmap._place.Level))).ToString())));
+                    formData.Add(new MultipartFormDataSection("scaleZ", ((gameObject.transform.localScale.z * Mathf.Pow(2, (21 - terrainmap._place.Level))).ToString())));
                     break;
 
             } 
         }
         formData.Add(new MultipartFormDataSection("itemName", gameObject.name));
-        if (lockaction == lockAction.dolock)
-        {
-            formData.Add(new MultipartFormDataSection("lockedBy", SystemInfo.deviceName));
-        }
-        else
-        {
-            formData.Add(new MultipartFormDataSection("lockedBy", "none"));
-        }
-        
 
         url += "?action=update";
 
-        //formData.Add(new MultipartFormDataSection("nameid", SystemInfo.deviceName));
-        //formData.Add(new MultipartFormDataSection("name", gameObject.name));
+        yield return null;
+
+        
 
         UnityWebRequest www = UnityWebRequest.Post(url, formData);
         www.chunkedTransfer = false;
@@ -234,8 +168,9 @@ public class Buildings : MonoBehaviour {
         {
             Debug.Log("Form upload complete!" + www.downloadHandler.text);
         }
+        
     }
-	*/
+	
 
     private IEnumerator DownloadSKPModule(string url, string name)
     {
@@ -322,64 +257,111 @@ public class Buildings : MonoBehaviour {
         }
     }
 
+    public void OnClickZoomOut()
+    {
+        transform.localScale = transform.localScale / scaleRate;
+        List<string> list = new List<string>();
+        list.Add("scale");
+        StartCoroutine(UpdateSQL(updateURL, list, null));
+    }
 
-	
-	/*
-    private IEnumerator insertSQL(string url)
+    public void OnClickZoomIn()
+    {
+        transform.localScale = transform.localScale * scaleRate;
+        List<string> list = new List<string>();
+        list.Add("scale");
+        StartCoroutine(UpdateSQL(updateURL, list, null));
+    }
+
+    public void OnClickMoveLeft()
+    {
+        transform.position -= new Vector3(0.01f, 0, 0);
+        GameObject terrainmap = GameObject.Find("TerrainMap");
+        Coordinate co = terrainmap.GetComponent<TerrainMap>().GetCoordinateFromPosition(transform.position);
+        List<string> list = new List<string>();
+        list.Add("coordinate");
+        StartCoroutine(UpdateSQL(updateURL, list, co));
+    }
+
+    public void OnClickMoveRight()
     {
 
+        transform.position += new Vector3(0.01f, 0, 0);
+        GameObject terrainmap = GameObject.Find("TerrainMap");
+        Coordinate co = terrainmap.GetComponent<TerrainMap>().GetCoordinateFromPosition(transform.position);
+        List<string> list = new List<string>();
+        list.Add("coordinate");
+        StartCoroutine(UpdateSQL(updateURL, list, co));
+    }
+
+    public void OnClickMoveUp()
+    {
+        transform.position += new Vector3(0, 0, 0.01f);
+        GameObject terrainmap = GameObject.Find("TerrainMap");
+        Coordinate co = terrainmap.GetComponent<TerrainMap>().GetCoordinateFromPosition(transform.position);
+        List<string> list = new List<string>();
+        list.Add("coordinate");
+        StartCoroutine(UpdateSQL(updateURL, list, co));
+    }
+
+    public void OnClickMoveDown()
+    {
+
+        transform.position -= new Vector3(0, 0, 0.01f);
+        GameObject terrainmap = GameObject.Find("TerrainMap");
+        Coordinate co = terrainmap.GetComponent<TerrainMap>().GetCoordinateFromPosition(transform.position);
+        List<string> list = new List<string>();
+        list.Add("coordinate");
+        StartCoroutine(UpdateSQL(updateURL, list, co));
+    }
+
+    public void OnExitClick(GameObject go)
+    {
+        stopUpdate = false;
+        Destroy(go);
+    }
+
+    public void OnClickDelete(GameObject go)
+    {
+        Destroy(go);
+        Destroy(this.gameObject);
+        StartCoroutine(Eraseitems(updateURL));
+    }
+
+    public void OnClickTurnLeft()
+    {
+
+        transform.Rotate(new Vector3(0, -2f, 0));
+        List<string> list = new List<string>();
+        list.Add("rotation");
+        StartCoroutine(UpdateSQL(updateURL, list, null));
+    }
+    public void OnClickTurnRight()
+    {
+        transform.Rotate(new Vector3(0, 2f, 0));
+        List<string> list = new List<string>();
+        list.Add("rotation");
+        StartCoroutine(Eraseitems(updateURL));
+    }
+
+    private IEnumerator Eraseitems(string url)
+    {
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-        formData.Add(new MultipartFormDataSection("itemName", gameObject.name+"_"+SystemInfo.deviceName));
-        formData.Add(new MultipartFormDataSection("positionX", gameObject.transform.position.x.ToString()));
-        formData.Add(new MultipartFormDataSection("positionY", gameObject.transform.position.y.ToString()));
-        formData.Add(new MultipartFormDataSection("positionZ", gameObject.transform.position.z.ToString()));
-        formData.Add(new MultipartFormDataSection("rotationX", gameObject.transform.eulerAngles.x.ToString()));
-        formData.Add(new MultipartFormDataSection("rotationY", gameObject.transform.eulerAngles.y.ToString()));
-        formData.Add(new MultipartFormDataSection("rotationZ", gameObject.transform.eulerAngles.z.ToString()));
-        formData.Add(new MultipartFormDataSection("scaleX", gameObject.transform.localScale.x.ToString()));
-        formData.Add(new MultipartFormDataSection("scaleY", gameObject.transform.localScale.y.ToString()));
-        formData.Add(new MultipartFormDataSection("scaleZ", gameObject.transform.localScale.z.ToString()));
-        formData.Add(new MultipartFormDataSection("lockedBy", "none"));
-
-        url += "?action=insert";
-
-        //formData.Add(new MultipartFormDataSection("nameid", SystemInfo.deviceName));
-        //formData.Add(new MultipartFormDataSection("name", gameObject.name));
-
-        UnityWebRequest www = UnityWebRequest.Post(url, formData);
-        www.chunkedTransfer = false;
-        yield return www.SendWebRequest();
-        if (www.error != "" && www.error != null)
+        formData.Add(new MultipartFormDataSection("itemName", gameObject.name));
+        url += "?action=delete";
+        UnityWebRequest hs_get = UnityWebRequest.Post(url, formData);
+        hs_get.chunkedTransfer = false;
+        yield return hs_get.SendWebRequest();
+        if (hs_get.error != "" && hs_get.error != null)
         {
-            Debug.Log(www.error);
+            Debug.Log(hs_get.error);
         }
         else
         {
-            Debug.Log("Form upload complete!" + www.downloadHandler.text);
+            Debug.Log("successfully delete item!");
         }
     }
 
-    public static GameObject FindHideChildGameObject(GameObject parent, string childName)
-    {
-        if (parent.name == childName)
-        {
-            return parent;
-        }
-        if (parent.transform.childCount < 1)
-        {
-            return null;
-        }
-        GameObject obj = null;
-        for (int i = 0; i < parent.transform.childCount; i++)
-        {
-            GameObject go = parent.transform.GetChild(i).gameObject;
-            obj = FindHideChildGameObject(go, childName);
-            if (obj != null)
-            {
-                break;
-            }
-        }
-        return obj;
-    }
-	*/
+
+
 }

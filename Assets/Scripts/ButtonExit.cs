@@ -8,6 +8,14 @@ public class ButtonExit : MonoBehaviour {
 	// Use this for initialization
     public void OnSelect()
     {
-        this.gameObject.SendMessageUpwards("OnExitClick");
+        if (this.transform.parent.gameObject.name.Contains("Building"))
+        {
+            this.transform.parent.gameObject.GetComponent<BuildingMenu>().building.SendMessage("OnExitClick", this.transform.parent.gameObject);
+        }
+        else
+        {
+            this.gameObject.SendMessageUpwards("OnExitClick");
+        }
+       
     }
 }

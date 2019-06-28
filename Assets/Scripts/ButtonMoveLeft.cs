@@ -8,7 +8,15 @@ public class ButtonMoveLeft : MonoBehaviour {
 	// Use this for initialization
     public void OnSelect()
     {
-        GameObject terrain = GameObject.Find("TerrainMap");
-        terrain.SendMessage("OnClickMoveLeft");
+
+        if (this.transform.parent.gameObject.name.Contains("Building"))
+        {
+            this.transform.parent.gameObject.GetComponent<BuildingMenu>().building.SendMessage("OnClickMoveLeft");
+        }
+        else
+        {
+            GameObject terrain = GameObject.Find("TerrainMap");
+            terrain.SendMessage("OnClickMoveLeft");
+        }
     }
 }

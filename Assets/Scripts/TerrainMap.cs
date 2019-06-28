@@ -39,6 +39,7 @@ namespace Esri.HoloLens.APP {
         public float MaximimDistance = 10f;
 
         public StaticMenu buttonZoomPrefab;
+        public StableMenu buttonVideoPrefab;
         //public StableMenu buttonChoosePrefab;
         //public StableMenu buttonCallPrefab;
         private float rotationFactorY;
@@ -73,6 +74,8 @@ namespace Esri.HoloLens.APP {
         private string m_xml = "initial";
         private DateTime m_datetime;
         private StaticMenu buttonObject;
+        private StableMenu videoMenu;
+        
         public string currentDimension = "2D";
         public string currentStyle = "street";
         public Mark markPrefab;
@@ -158,8 +161,9 @@ namespace Esri.HoloLens.APP {
 
                             if (buttonObject == null)
                             {
-                                buttonObject = Instantiate(buttonZoomPrefab, terrain.transform.position + new Vector3(1f, 0.3f, 0.5f), Quaternion.Euler(60, 0, 0)) as StaticMenu;
+                                buttonObject = Instantiate(buttonZoomPrefab, terrain.transform.position, Quaternion.Euler(60, 0, 0)) as StaticMenu;
                             }
+                          
                             
                             //buttonObject.transform.parent = terrain.transform;
 
@@ -1098,8 +1102,16 @@ namespace Esri.HoloLens.APP {
         {
             this.StartCoroutine(this.AddStreetAddress(position - new Vector3(0f, 0.2f, 0f)));
         }
-		
-		private IEnumerator CheckExistmap(string url)
+
+        public void OnClickVideo()
+        {
+            if (videoMenu == null)
+            {
+                videoMenu = Instantiate(buttonVideoPrefab, new Vector3(0,0,0), Quaternion.Euler(60, 0, 0)) as StableMenu;
+            }
+        }
+        
+        private IEnumerator CheckExistmap(string url)
         {
             url += "?action=maploaded";
             UnityWebRequest hs_get = UnityWebRequest.Get(url);
@@ -1212,6 +1224,36 @@ namespace Esri.HoloLens.APP {
             return this._place;
 
         }
+
+        public Coordinate GetCoordinateFromPosition(Vector3 position)
+        {
+            // Get UL and LR coordinates
+            var tileUL = this._place.Location.ToTile(this._place.Level);
+            var tileLR = new Tile()
+            {
+                Zoom = tileUL.Zoom,
+                X = tileUL.X + CHILDREN_LEVEL * 2,
+                Y = tileUL.Y + CHILDREN_LEVEL * 2
+            };
+            var coordUL = tileUL.UpperLeft(CHILDREN_LEVEL);
+            var coordLR = tileLR.UpperLeft(CHILDREN_LEVEL);
+
+            // Get tapped location relative to lower left.
+            GameObject terrain = GameObject.Find("terrain");
+            var location = position - terrain.transform.position;
+
+            var longitude = coordUL.Longitude + (coordLR.Longitude - coordUL.Longitude) * (location.x / SIZE);
+            var lattitude = coordLR.Latitude + (coordUL.Latitude - coordLR.Latitude) * (location.z / SIZE);
+
+            var coordinate = new Coordinate()
+            {
+                Longitude = longitude,
+                Latitude = lattitude
+            };
+
+            return coordinate;
+        }
+
     }
 
 }

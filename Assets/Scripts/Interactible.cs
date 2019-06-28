@@ -30,6 +30,7 @@ public class Interactible : MonoBehaviour
         if (collider == null)
         {
             gameObject.AddComponent<BoxCollider>();
+            gameObject.GetComponent<BoxCollider>().size = new Vector3(20f, 20f, 20f);
         }
 
         EnableAudioHapticFeedback();

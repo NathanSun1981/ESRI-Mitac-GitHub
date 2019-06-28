@@ -92,6 +92,7 @@ namespace Academy.HoloToolkit.Unity
         private void GestureRecognizer_ManipulationCompletedEvent(InteractionSourceKind source, Vector3 cumulativeDelta, Ray headRay)
         {
 		    IsManipulating = false;
+            HandsManager.Instance.FocusedGameObject.SendMessageUpwards("PerformManipulationComplete", cumulativeDelta);
         }
 
         private void GestureRecognizer_ManipulationCanceledEvent(InteractionSourceKind source, Vector3 cumulativeDelta, Ray headRay)
@@ -117,7 +118,7 @@ namespace Academy.HoloToolkit.Unity
             {
                 IsNavigating = true;
                 NavigationPosition = normalizedOffset;
-                HandsManager.Instance.FocusedGameObject.SendMessageUpwards("PerformZoomUpdate", normalizedOffset, SendMessageOptions.DontRequireReceiver);
+                HandsManager.Instance.FocusedGameObject.SendMessageUpwards("PerformNavigationUpdate", normalizedOffset, SendMessageOptions.DontRequireReceiver);
             }
         }
 

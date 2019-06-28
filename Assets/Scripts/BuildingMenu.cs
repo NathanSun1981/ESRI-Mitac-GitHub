@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StaticMenu : MonoBehaviour
-{
+public class BuildingMenu : MonoBehaviour {
+
+    public GameObject building;
     private GameObject terrain;
     // Use this for initialization
     void Start()
@@ -12,7 +13,6 @@ public class StaticMenu : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (terrain != null)
-            this.transform.position = terrain.transform.position + new Vector3(0f, 0.1f, -0.7f);
+        this.transform.position = building.transform.position + new Vector3(0f, 0.1f, 0f);
     }
 }

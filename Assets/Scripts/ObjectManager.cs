@@ -157,7 +157,8 @@ public class ObjectManager : MonoBehaviour {
                         }
                         else
                         {
-                            Destroy(GameObject.Find(itemName).gameObject);
+                            if (GameObject.Find(itemName) != null)
+                                Destroy(GameObject.Find(itemName).gameObject);
                         }
 
                     }

@@ -8,7 +8,16 @@ public class ButtonZoomIn : MonoBehaviour {
 	// Use this for initialization
     public void OnSelect()
     {
-        GameObject terrain = GameObject.Find("TerrainMap");
-        terrain.SendMessage("OnClickZoomIn");
+
+        if (this.transform.parent.gameObject.name.Contains("Building"))
+        {
+            this.transform.parent.gameObject.GetComponent<BuildingMenu>().building.SendMessage("OnClickZoomIn");
+        }
+        else
+        {
+            GameObject terrain = GameObject.Find("TerrainMap");
+            terrain.SendMessage("OnClickZoomIn");
+        }
+        
     }
 }

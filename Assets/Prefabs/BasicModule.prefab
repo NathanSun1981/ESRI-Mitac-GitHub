@@ -186,5 +186,7 @@ MonoBehaviour:
   MoveSpeed: 10
   MaxScale: 0.0008
   MinScale: 0.0002
+  scaleRate: 0.2
   RotationSensitivity: 25
-  MenuControl: {fileID: 0}
+  buildMenu: {fileID: 114067087252233314, guid: 02a937142c1168848ba59f7e5d8f8f78,
+    type: 2}

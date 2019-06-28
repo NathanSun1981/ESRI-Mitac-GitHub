@@ -8,7 +8,14 @@ public class ButtonMoveUp : MonoBehaviour {
 	// Use this for initialization
     public void OnSelect()
     {
-        GameObject terrain = GameObject.Find("TerrainMap");
-        terrain.SendMessage("OnClickMoveUp");
+        if (this.transform.parent.gameObject.name.Contains("Building"))
+        {
+            this.transform.parent.gameObject.GetComponent<BuildingMenu>().building.SendMessage("OnClickMoveUp");
+        }
+        else
+        {
+            GameObject terrain = GameObject.Find("TerrainMap");
+            terrain.SendMessage("OnClickMoveUp");
+        }
     }
 }
