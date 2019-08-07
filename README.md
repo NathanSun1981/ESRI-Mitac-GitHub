@@ -23,8 +23,6 @@ For the convenience during the collaboration, we integrated a video conference m
 **4, Database and coordination server**
 We built a LAMP structure server for modules management and data storage. All available pre-designed building modules will be stored in the server, the clients can fetch the required modules from the server rather than storing them locally. It can save lots of space on the local device. The database is responsible for the data coordination. All information of map, building, facilities will be stored in the database. The HoloLens and touch table applications share and update the data through the database for a synchronized visualization. This back-end is very flexible to deploy. We can deploy it on local machine, virtual machine/docker or cloud platform such as AWS and Azure.
 
-**The GitHub repository:**
-*(https://github.com/NathanSun1981/ESRI-APP-Competition)*
 
 **A video demo can be checked from the link below:**
 *https://drive.google.com/file/d/1T57VUWhBEHn68JYZzMUzrviTIxz798Az/view?usp=sharing*
